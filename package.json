@@ -1,6 +1,6 @@
 {
   "name": "nest-setup",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A CLI tool to set up a new NestJS project with required configs",
   "main": "index.js",
   "bin": {
@@ -12,7 +12,7 @@
     "setup",
     "cli"
   ],
-  "author": "Your Name",
+  "author": "Kyaw Kyaw Htet",
   "license": "MIT",
   "dependencies": {
     "fs-extra": "^11.1.1"
