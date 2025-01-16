@@ -5,43 +5,45 @@ const path = require('path');
 const { execSync } = require('child_process');
 
 const main = async () => {
-    console.log('Starting NestJS project setup...');
+  console.log('Starting NestJS project setup...');
 
-    // Step 1: Install Required Packages
-    console.log('Installing necessary packages...');
-    const packages = [
-        '@nestjs/jwt',
-        '@nestjs/core',
-        '@nestjs/common',
-        '@prisma/client',
-        'prisma', // Dev dependency
-    ];
-    execSync(`npm install ${packages.join(' ')} && npm install prisma --save-dev`, { stdio: 'inherit' });
+  // Step 1: Install Required Packages
+  console.log('Installing necessary packages...');
+  const packages = [
+    '@nestjs/jwt',
+    '@nestjs/core',
+    '@nestjs/common',
+    '@prisma/client',
+    'prisma', // Dev dependency
+    'class-validator',
+    'class-transformer',
+  ];
+  execSync(`npm install ${packages.join(' ')} && npm install prisma --save-dev`, { stdio: 'inherit' });
 
-    console.log('Packages installed.');
+  console.log('Packages installed.');
 
-    // Step 2: Run `prisma init`
-    console.log('Initializing Prisma...');
-    execSync('npx prisma init', { stdio: 'inherit' });
+  // Step 2: Run `prisma init`
+  console.log('Initializing Prisma...');
+  execSync('npx prisma init', { stdio: 'inherit' });
 
-    // Step 3: Create Directories and Add Files
-    const basePath = path.join(process.cwd(), 'src');
-    const paths = {
-        guards: path.join(basePath, 'common', 'guards'),
-        interceptors: path.join(basePath, 'common', 'interceptors'),
-        decoratorsAuth: path.join(basePath, 'common', 'decorators', 'auth'),
-        decoratorsResponse: path.join(basePath, 'common', 'decorators', 'response'),
-        prisma: path.join(basePath, 'prisma'),
-    };
+  // Step 3: Create Directories and Add Files
+  const basePath = path.join(process.cwd(), 'src');
+  const paths = {
+    guards: path.join(basePath, 'common', 'guards'),
+    interceptors: path.join(basePath, 'common', 'interceptors'),
+    decoratorsAuth: path.join(basePath, 'common', 'decorators', 'auth'),
+    decoratorsResponse: path.join(basePath, 'common', 'decorators', 'response'),
+    prisma: path.join(basePath, 'prisma'),
+  };
 
-    Object.values(paths).forEach((dir) => fs.ensureDirSync(dir));
+  Object.values(paths).forEach((dir) => fs.ensureDirSync(dir));
 
-    console.log('Creating and configuring files...');
+  console.log('Creating and configuring files...');
 
-    // AuthGuard
-    fs.writeFileSync(
-        path.join(paths.guards, 'auth.guard.ts'),
-        `
+  // AuthGuard
+  fs.writeFileSync(
+    path.join(paths.guards, 'auth.guard.ts'),
+    `
 import {
   CanActivate,
   ExecutionContext,
@@ -92,23 +94,23 @@ export class AuthGuard implements CanActivate {
   }
 }
 `
-    );
+  );
 
-    // Constants
-    fs.writeFileSync(
-        path.join(paths.guards, 'jwt.constants.ts'),
-        `
+  // Constants
+  fs.writeFileSync(
+    path.join(paths.guards, 'jwt.constants.ts'),
+    `
 export const jwtConstants = {
   secret:
     'PLEASE CHANGE THIS TO YOUR OWN SECRET',
 };
 `
-    );
+  );
 
-    // ResponseInterceptor
-    fs.writeFileSync(
-        path.join(paths.interceptors, 'response.interceptor.ts'),
-        `
+  // ResponseInterceptor
+  fs.writeFileSync(
+    path.join(paths.interceptors, 'response.interceptor.ts'),
+    `
 import {
   Injectable,
   NestInterceptor,
@@ -183,23 +185,23 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
   }
 }
 `
-    );
+  );
 
-    // Public Decorator
-    fs.writeFileSync(
-        path.join(paths.decoratorsAuth, 'public.decorator.ts'),
-        `
+  // Public Decorator
+  fs.writeFileSync(
+    path.join(paths.decoratorsAuth, 'public.decorator.ts'),
+    `
 import { SetMetadata } from '@nestjs/common';
 
 export const IS_PUBLIC_KEY = 'isPublic';
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
 `
-    );
+  );
 
-    // Response Message Decorator
-    fs.writeFileSync(
-        path.join(paths.decoratorsResponse, 'response-message.decorator.ts'),
-        `
+  // Response Message Decorator
+  fs.writeFileSync(
+    path.join(paths.decoratorsResponse, 'response-message.decorator.ts'),
+    `
 import { SetMetadata } from '@nestjs/common';
 
 export const RESPONSE_MESSAGE_METADATA = 'responseMessage';
@@ -207,12 +209,12 @@ export const RESPONSE_MESSAGE_METADATA = 'responseMessage';
 export const ResponseMessage = (message: string) =>
   SetMetadata(RESPONSE_MESSAGE_METADATA, message);
 `
-    );
+  );
 
-    // PrismaService
-    fs.writeFileSync(
-        path.join(paths.prisma, 'prisma.service.ts'),
-        `
+  // PrismaService
+  fs.writeFileSync(
+    path.join(paths.prisma, 'prisma.service.ts'),
+    `
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 
@@ -223,12 +225,12 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
   }
 }
 `
-    );
+  );
 
-    // PrismaModule
-    fs.writeFileSync(
-        path.join(paths.prisma, 'prisma.module.ts'),
-        `
+  // PrismaModule
+  fs.writeFileSync(
+    path.join(paths.prisma, 'prisma.module.ts'),
+    `
 import { Global, Module } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
 
@@ -239,12 +241,12 @@ import { PrismaService } from './prisma.service';
 })
 export class PrismaModule {}
 `
-    );
+  );
 
-    console.log('Setup complete! Your NestJS project is ready.');
+  console.log('Setup complete! Your NestJS project is ready.');
 };
 
 main().catch((err) => {
-    console.error('An error occurred:', err);
-    process.exit(1);
+  console.error('An error occurred:', err);
+  process.exit(1);
 });
