@@ -11,3 +11,9 @@ To install the `nest-setup` package globally, use the following command:
 ```bash
 npm install -g nest-setup
 ```
+
+## Usage
+
+1. Navigate to the newly created project directory:
+   ```bash
+   cd <project-folder-name>
