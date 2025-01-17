@@ -11,14 +11,17 @@ const main = async () => {
   console.log('Installing necessary packages...');
   const packages = [
     '@nestjs/jwt',
-    '@nestjs/core',
-    '@nestjs/common',
+    '@nestjs/core@^11.0.1', // Ensure compatibility with NestJS 11
+    '@nestjs/common@^11.0.1', // Ensure compatibility with NestJS 11
     '@prisma/client',
     'prisma', // Dev dependency
     'class-validator',
     'class-transformer',
+    '@nestjs/swagger@11.0.0' // Install compatible version of @nestjs/swagger
   ];
-  execSync(`npm install ${packages.join(' ')} && npm install prisma --save-dev`, { stdio: 'inherit' });
+
+  // Run installation with the `--legacy-peer-deps` flag to avoid dependency conflicts
+  execSync(`npm install ${packages.join(' ')} --legacy-peer-deps`, { stdio: 'inherit' });
 
   console.log('Packages installed.');
 
