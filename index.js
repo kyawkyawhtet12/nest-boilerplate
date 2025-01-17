@@ -17,7 +17,8 @@ const main = async () => {
     'prisma', // Dev dependency
     'class-validator',
     'class-transformer',
-    '@nestjs/swagger@11.0.0' // Install compatible version of @nestjs/swagger
+    '@nestjs/swagger@11.0.0', // Install compatible version of @nestjs/swagger
+    'swagger-ui-express' // Swagger UI middleware
   ];
 
   // Run installation with the `--legacy-peer-deps` flag to avoid dependency conflicts
@@ -104,8 +105,7 @@ export class AuthGuard implements CanActivate {
     path.join(paths.guards, 'jwt.constants.ts'),
     `
 export const jwtConstants = {
-  secret:
-    'PLEASE CHANGE THIS TO YOUR OWN SECRET',
+  secret: 'PLEASE CHANGE THIS TO YOUR OWN SECRET',
 };
 `
   );
@@ -243,6 +243,34 @@ import { PrismaService } from './prisma.service';
   exports: [PrismaService],
 })
 export class PrismaModule {}
+`
+  );
+
+  // Swagger Setup in src/main.ts
+  fs.writeFileSync(
+    path.join(basePath, 'main.ts'),
+    `
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  // Swagger Configuration
+  const config = new DocumentBuilder()
+    .setTitle('API Documentation')
+    .setDescription('The API description')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
+
+  await app.listen(3000);
+}
+
+bootstrap();
 `
   );
 
