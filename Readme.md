@@ -6,6 +6,8 @@ A command-line tool to automate the setup of a NestJS project with JWT authentic
 
 > **Warning**: It is recommended to install `nest-setup` globally using the `-g` flag to make it accessible across your system. Installing packages globally can affect system-wide configurations, so ensure you trust the source before proceeding.
 
+> **Warning**: This package is intended for personal use. Please consider this carefully before installing it.
+
 To install the `nest-setup` package globally, use the following command:
 
 ```bash
