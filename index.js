@@ -63,8 +63,186 @@ const main = async () => {
   Object.values(paths).forEach((dir) => fs.ensureDirSync(dir));
   console.log('Creating and configuring files...');
 
-  // Files creation logic (omitted for brevity, same as before)
-  // ...
+  console.log('Creating and configuring files...');
+
+  // AuthGuard
+  fs.writeFileSync(
+    path.join(paths.guards, 'auth.guard.ts'),
+    `
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { jwtConstants } from './jwt.constants';
+import { Request } from 'express';
+import { Reflector } from '@nestjs/core';
+import { IS_PUBLIC_KEY } from '../decorators/auth/public.decorator';
+@Injectable()
+export class AuthGuard implements CanActivate {
+  constructor(
+    private jwtService: JwtService,
+    private reflector: Reflector,
+  ) {}
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (isPublic) {
+      return true;
+    }
+    const request = context.switchToHttp().getRequest();
+    const token = this.extractTokenFromHeader(request);
+    if (!token) {
+      throw new UnauthorizedException();
+    }
+    try {
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: jwtConstants.secret,
+      });
+      request['user'] = payload;
+    } catch {
+      throw new UnauthorizedException();
+    }
+    return true;
+  }
+  private extractTokenFromHeader(request: Request): string | undefined {
+    const [type, token] = request.headers.authorization?.split(' ') ?? [];
+    return type === 'Bearer' ? token : undefined;
+  }
+}
+`
+  );
+  // Constants
+  fs.writeFileSync(
+    path.join(paths.guards, 'jwt.constants.ts'),
+    `
+export const jwtConstants = {
+  secret: 'PLEASE CHANGE THIS TO YOUR OWN SECRET',
+};
+`
+  );
+  // ResponseInterceptor
+  fs.writeFileSync(
+    path.join(paths.interceptors, 'response.interceptor.ts'),
+    `
+import {
+  Injectable,
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
+import { Observable, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { Reflector } from '@nestjs/core';
+import { RESPONSE_MESSAGE_METADATA } from '../decorators/response/response-message.decorator';
+export type Response<T> = {
+  status: boolean;
+  statusCode: number;
+  message: string;
+  data: T;
+};
+@Injectable()
+export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
+  constructor(private reflector: Reflector) {}
+  intercept(
+    context: ExecutionContext,
+    next: CallHandler,
+  ): Observable<Response<T>> {
+    return next.handle().pipe(
+      map((res: unknown) => this.responseHandler(res, context)),
+      catchError((err: HttpException) =>
+        throwError(() => this.errorHandler(err, context)),
+      ),
+    );
+  }
+  errorHandler(exception: HttpException, context: ExecutionContext) {
+    const ctx = context.switchToHttp();
+    const response = ctx.getResponse();
+    const request = ctx.getRequest();
+    const status =
+      exception instanceof HttpException
+        ? exception.getStatus()
+        : HttpStatus.INTERNAL_SERVER_ERROR;
+    response.status(status).json({
+      status: false,
+      statusCode: status,
+      path: request.url,
+      message: exception.message,
+      result: exception,
+    });
+  }
+  responseHandler(res: any, context: ExecutionContext) {
+    const ctx = context.switchToHttp();
+    const response = ctx.getResponse();
+    const statusCode = response.statusCode;
+    const message =
+      this.reflector.get<string>(
+        RESPONSE_MESSAGE_METADATA,
+        context.getHandler(),
+      ) || 'success';
+    return {
+      status: true,
+      message: message,
+      statusCode,
+      data: res,
+    };
+  }
+}
+`
+  );
+  // Public Decorator
+  fs.writeFileSync(
+    path.join(paths.decoratorsAuth, 'public.decorator.ts'),
+    `
+import { SetMetadata } from '@nestjs/common';
+export const IS_PUBLIC_KEY = 'isPublic';
+export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
+`
+  );
+  // Response Message Decorator
+  fs.writeFileSync(
+    path.join(paths.decoratorsResponse, 'response-message.decorator.ts'),
+    `
+import { SetMetadata } from '@nestjs/common';
+export const RESPONSE_MESSAGE_METADATA = 'responseMessage';
+export const ResponseMessage = (message: string) =>
+  SetMetadata(RESPONSE_MESSAGE_METADATA, message);
+`
+  );
+  // PrismaService
+  fs.writeFileSync(
+    path.join(paths.prisma, 'prisma.service.ts'),
+    `
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { PrismaClient } from '@prisma/client';
+@Injectable()
+export class PrismaService extends PrismaClient implements OnModuleInit {
+  async onModuleInit() {
+    await this.$connect();
+  }
+}
+`
+  );
+  // PrismaModule
+  fs.writeFileSync(
+    path.join(paths.prisma, 'prisma.module.ts'),
+    `
+import { Global, Module } from '@nestjs/common';
+import { PrismaService } from './prisma.service';
+@Global()
+@Module({
+  providers: [PrismaService],
+  exports: [PrismaService],
+})
+export class PrismaModule {}
+`
+  );
 
   // Swagger Setup in src/main.ts
   fs.writeFileSync(

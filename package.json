@@ -1,6 +1,6 @@
 {
   "name": "nest-setup",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "A CLI tool to set up a new NestJS project with required configs",
   "main": "index.js",
   "bin": {
