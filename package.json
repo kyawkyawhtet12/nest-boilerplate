@@ -4,7 +4,8 @@
   "description": "A CLI tool to set up a new NestJS project with required configs",
   "main": "index.js",
   "bin": {
-    "nest-setup": "./index.js"
+    "nest-setup": "./index.js",
+    "nest-auth": "./auth.js"
   },
   "scripts": {},
   "keywords": [
