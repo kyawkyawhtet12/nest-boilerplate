@@ -17,10 +17,19 @@ npm install -g nest-setup
 ## Usage
 
 1. Navigate to the newly created project directory:
+
    ```bash
    cd <project-folder-name>
    ```
+
 2. Run the setup script:
+
    ```bash
    nest-setup
+   ```
+
+3. In addition if you also want to setup Basic Authentication run the auth setup script
+
+   ```bash
+   nest-auth
    ```
